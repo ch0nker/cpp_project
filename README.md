@@ -15,7 +15,7 @@ $ ./install.sh
 
 ## Usage
 ```
-cpp_project <project_name> [flags]c
+cpp_project <project_name> [flags]
 
 Flags:
         -h, --help              : Outputs this message.
