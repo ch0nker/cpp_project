@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-const char* USAGE = "Usage:\n\tcpp_project <project_name> [flags]\n\nFlags:\n\t-h, --help\t\t\t: Outputs this message.\n\t-n, --name=<name>\t\t: Sets the project binary's name.\n\t-d, --description=<description>\t: Sets the project's description\n\t-v, --version=<version>\t\t: Sets the project version.\n\t-s, --shared\t\t\t: Makes the project a shared library.";
+const char* USAGE = "Usage:\n\tcpp_project <project_name> [flags]\n\nFlags:\n\t-h, --help\t\t\t: Outputs this message.\n\t-n, --name=<name>\t\t: Sets the project binary's name.\n\t-d, --description=<desc>\t: Sets the project's description\n\t-v, --version=<ver>\t\t: Sets the project version.\n\t-s, --shared\t\t\t: Makes the project a shared library.";
 const int REQUIRED_PARAMS = 1;
 
 typedef struct {
