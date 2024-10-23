@@ -41,9 +41,9 @@ cpp_project <project_name> [flags]
 The following flags are available:
 
 - `-h`, `--help`: Outputs a help message.
-- `-n`, `--name <name>`: Sets the project binary's name.
-- `-d`, `--description <desc>`: Sets the project's description.
-- `-v`, `--version <ver>`: Sets the project version.
+- `-n`, `--name=<name>`: Sets the project binary's name.
+- `-d`, `--description=<desc>`: Sets the project's description.
+- `-v`, `--version=<ver>`: Sets the project version.
 - `-s`, `--shared`: Makes the project a shared library.
 
 ## Example
