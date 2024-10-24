@@ -67,7 +67,7 @@ void handle_flag(Flags* flags, char* raw_flag, size_t flag_size) {
     size_t value_size = 0;
 
     char* value = NULL;
-    char* flag = (char*) malloc(flag_size);
+    char* flag = malloc(flag_size);
 
     if(flag == NULL) {
         perror("Memory allocation failed\n");
