@@ -19,7 +19,7 @@ typedef struct {
 
 char* get_value(char* flag, size_t* size, size_t* value_size) {
     char* equals_pos = strchr(flag, '=');
-    if (!equals_pos || equals_pos == flag || *(equals_pos + 1) == '\0') {
+    if (!equals_pos || equals_pos == flag || equals_pos[0] == '\0') {
         return NULL;
     }
 
