@@ -43,14 +43,6 @@ void get_flag(char** flag, size_t* flag_size, char** value, size_t* value_size) 
 
     *flag_size -= count;
 
-    char* new_ptr = realloc(*flag, *flag_size + 1);
-    if(new_ptr == NULL) {
-        perror("Memory allocation failed.\n");
-        return;
-    }
-
-    *flag = new_ptr;
-
     memmove(*flag, *flag + count, *flag_size);
     (*flag)[*flag_size] = '\0';
 
