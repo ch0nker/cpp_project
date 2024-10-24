@@ -102,6 +102,9 @@ int main(int argc, char* argv[]) {
 
     int result = handle_args(argc, argv, map, USAGE, REQUIRED_PARAMS);
 
+    if(argc == 1)
+        return EXIT_FAILURE;
+
     flags.project_name = strdup(argv[1]);
     if(flags.project_name == NULL) {
         perror("Failed to allocate memory.\n");
