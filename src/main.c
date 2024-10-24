@@ -35,18 +35,18 @@ char* get_value(char* flag, size_t* size, size_t* value_size) {
     return value;
 }
 
-void get_flag(char** flag, size_t* flag_size, char** value, size_t* value_size) {
+void get_flag(char* flag, size_t* flag_size, char** value, size_t* value_size) {
     int count = 0;
 
-    while(count < *flag_size && (*flag)[count] == '-')
+    while(count < *flag_size && flag[count] == '-')
         count++;
 
     *flag_size -= count;
 
-    memmove(*flag, *flag + count, *flag_size);
-    (*flag)[*flag_size] = '\0';
+    memmove(flag, flag + count, *flag_size);
+    flag[*flag_size] = '\0';
 
-    *value = get_value(*flag, flag_size, value_size);
+    *value = get_value(flag, flag_size, value_size);
 }
 
 int check_flag(char* flag, const char* short_hand, const char* full) {
@@ -69,7 +69,7 @@ void handle_flag(Flags* flags, char* raw_flag, size_t flag_size) {
 
     strcpy(flag, raw_flag);
 
-    get_flag(&flag, &flag_size, &value, &value_size);
+    get_flag(flag, &flag_size, &value, &value_size);
 
     if(value != NULL) {
         if (check_flag(flag, "n", "name")) {
