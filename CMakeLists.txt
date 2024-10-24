@@ -5,4 +5,4 @@ project(cpp_project
         DESCRIPTION "Template c++ project creator"
         LANGUAGES C)
 
-add_executable(cpp_project src/main.c)
+add_executable(cpp_project src/main.c src/args.c)
