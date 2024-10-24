@@ -56,6 +56,13 @@ void get_flag(char* flag, size_t* flag_size, char** value, size_t* value_size) {
     *value = get_value(flag, flag_size, value_size);
 }
 
+int check_flag(char* flag, const char* short_hand, const char* full) {
+    return (
+        strcmp(flag, short_hand) == 0 ||
+        strcmp(flag, full) == 0
+    );
+}
+
 void handle_flag(Flags* flags, char* raw_flag, size_t flag_size) {
     size_t value_size = 0;
 
@@ -71,26 +78,17 @@ void handle_flag(Flags* flags, char* raw_flag, size_t flag_size) {
     get_flag(flag, &flag_size, &value, &value_size);
 
     if(value != NULL) {
-        if (
-            strcmp(flag, "name") == 0 ||
-            strcmp(flag, "n") == 0
-        ) {
+        if (check_flag(flag, "n", "name")) {
             if(flags->name && flags->name != flags->project_name)
                 free(flags->name);
 
             flags->name = value;
-        } else if (
-            strcmp(flag, "description") == 0 ||
-            strcmp(flag, "d") == 0
-        ) {
+        } else if (check_flag(flag, "d", "description")) {
             if(flags->description)
                 free(flags->description);
 
             flags->description = value;
-        } else if (
-            strcmp(flag, "version") == 0 ||
-            strcmp(flag, "v") == 0
-        ) {
+        } else if (check_flag(flag, "v", "version")) {
             if(flags->version)
                 free(flags->version);
 
@@ -99,17 +97,11 @@ void handle_flag(Flags* flags, char* raw_flag, size_t flag_size) {
             free(value);
         }
     } else {
-        if(
-            strcmp(flag, "help") == 0 ||
-            strcmp(flag, "h") == 0
-        ) {
+        if(check_flag(flag, "h", "help")) {
             printf("%s\n", USAGE);
             free(flag);
-            exit(0);
-        } else if(
-            strcmp(flag, "shared") == 0 ||
-            strcmp(flag, "s") == 0
-        ) {
+            exit(EXIT_SUCCESS);
+        } else if(check_flag(flag, "s", "shared")) {
             flags->shared = 1;
         }
     }
@@ -128,6 +120,25 @@ void free_flags(const Flags* flags) {
 
     if(flags->description)
         free(flags->description);
+}
+
+void cleanup(Flags* flags, char* project_directory, char* source_directory, char* include_directory, char* main_path, char* cmakelists_path) {
+    free_flags(flags);
+
+    if(project_directory != NULL)
+        free(project_directory);
+
+    if(source_directory != NULL)
+        free(source_directory);
+
+    if(include_directory != NULL)
+        free(include_directory);
+
+    if(main_path != NULL)
+        free(main_path);
+
+    if(cmakelists_path != NULL)
+        free(cmakelists_path);
 }
 
 char* join_paths(const char* path_1, const char* path_2) {
@@ -151,7 +162,7 @@ int main(int argc, char* argv[]) {
         flags.project_name = strdup(argv[1]);
         if(flags.project_name == NULL) {
             perror("Failed to allocate memory.\n");
-            return 1;
+            return EXIT_FAILURE;
         }
 
         flags.name = flags.project_name;
@@ -159,13 +170,13 @@ int main(int argc, char* argv[]) {
         if(flags.version == NULL) {
             free(flags.project_name);
             perror("Failed to allocate memory.\n");
-            return 1;
+            return EXIT_FAILURE;
         }
 
         if(flags.name[0] == '-') {
             handle_flag(&flags, flags.project_name, strlen(flags.project_name) + 1);
             free_flags(&flags);
-            return 0;
+            return EXIT_FAILURE;
         } 
 
         printf("Project Information:\n");
@@ -195,19 +206,18 @@ int main(int argc, char* argv[]) {
             if(stat(project_directory, &st) == -1) {
                 if(mkdir(project_directory, S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
                     perror("Failed to create project directory.\n");
-                    free_flags(&flags);
-                    free(project_directory);
-                    return 1;
+                    cleanup(&flags, project_directory, NULL, NULL, NULL, NULL);
+
+                    return EXIT_FAILURE;
                 }
 
                 char* include_directory = join_paths(project_directory, "include/");
                 if(stat(include_directory, &st) == -1) {
                     if(mkdir(include_directory, S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
                         perror("Failed to create include directory.\n");
-                        free_flags(&flags);
-                        free(project_directory);
-                        free(include_directory);
-                        return 1;
+                        cleanup(&flags, project_directory, NULL, include_directory, NULL, NULL);
+
+                        return EXIT_FAILURE;
                     }
                 }
 
@@ -215,11 +225,9 @@ int main(int argc, char* argv[]) {
                 if(stat(source_directory, &st) == -1) {
                     if(mkdir(source_directory, S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
                         perror("Failed to create source directory.\n");
-                        free_flags(&flags);
-                        free(project_directory);
-                        free(include_directory);
-                        free(source_directory);
-                        return 1;
+                        cleanup(&flags, project_directory, source_directory, include_directory, NULL, NULL);
+
+                        return EXIT_FAILURE;
                     }
                 }
 
@@ -233,12 +241,8 @@ int main(int argc, char* argv[]) {
                 cmakelists = fopen(cmakelists_path, "w");
                 if (cmakelists == NULL) {
                     perror("Failed to open CMakeLists.txt for writing.\n");
-                    free_flags(&flags);
-                    free(source_directory);
-                    free(include_directory);
-                    free(cmakelists_path);
-                    free(project_directory);
-                    return 1;
+                    cleanup(&flags, project_directory, source_directory, include_directory, NULL, cmakelists_path);
+                    return EXIT_FAILURE;
                 }
                 if(flags.shared == 0) {
                     fprintf(cmakelists, "cmake_minimum_required(VERSION 3.10)\n\nproject(%s\n\t\tVERSION %s\n\t\tDESCRIPTION \"%s\"\n\t\tLANGUAGES CXX)\n\nset(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)\n\ninclude_directories(include)\n\nfile(GLOB_RECURSE SOURCE_FILES \"src/*.cpp\" \"src/*.c\")\nadd_executable(%s ${SOURCE_FILES})", flags.project_name, flags.version, flags.description, flags.name);
@@ -254,38 +258,28 @@ int main(int argc, char* argv[]) {
 
                 if (main_file == NULL) {
                     perror("Failed to open src/main.cpp for writing.\n");
-                    free_flags(&flags);
-                    free(main_file);
-                    free(source_directory);
-                    free(include_directory);
-                    free(cmakelists_path);
-                    free(project_directory);
+                    cleanup(&flags, project_directory, source_directory, include_directory, main_path, cmakelists_path);
 
-                    return 1;
+                    return EXIT_FAILURE;
                 }
 
                 fprintf(main_file, "#include <cstdio>\n\nint main(int argc, char* argv[]) {\n\tprintf(\"Hello, world!\\n\");\n}");
                 fclose(main_file);
 
-                free_flags(&flags);
-
-                free(project_directory);
-                free(source_directory);
-                free(include_directory);
-                free(main_path);
-                free(cmakelists_path);
+                cleanup(&flags, project_directory, source_directory, include_directory, main_path, cmakelists_path);
             } else {
                 perror("Project directory already exists.\n");
-                free_flags(&flags);
-                free(project_directory);
-                return 1;
+                cleanup(&flags, project_directory, NULL, NULL, NULL, NULL);
+
+                return EXIT_FAILURE;
             }
         } else {
             free_flags(&flags);
             perror("Couldn't get cwd.\n");
-            return 1;
+            return EXIT_FAILURE;
         }
     } else {
         printf("%s\n", USAGE);
+        return EXIT_SUCCESS;
     }
 }
