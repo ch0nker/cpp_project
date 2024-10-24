@@ -35,25 +35,26 @@ char* get_value(char* flag, size_t* size, size_t* value_size) {
     return value;
 }
 
+void get_flag(char** flag, size_t* flag_size, char** value, size_t* value_size) {
+    int count = 0;
 
-void get_flag(char* flag, size_t* flag_size, char** value, size_t* value_size) {
-    for(int j = 0; j < 2; j++) {
-        if(flag[0] != '-')
-            break;
+    while(count < *flag_size && (*flag)[count] == '-')
+        count++;
 
-        void* new_ptr = realloc(flag, --*flag_size);
-        if(new_ptr == NULL) {
-            free(flag);
-            perror("Memory allocation failed\n");
-            return;
-        }
+    *flag_size -= count;
 
-        flag = (char*) new_ptr;
-
-        memmove(flag, flag + 1, *flag_size);
+    char* new_ptr = realloc(*flag, *flag_size + 1);
+    if(new_ptr == NULL) {
+        perror("Memory allocation failed.\n");
+        return;
     }
 
-    *value = get_value(flag, flag_size, value_size);
+    *flag = new_ptr;
+
+    memmove(*flag, *flag + count, *flag_size);
+    (*flag)[*flag_size] = '\0';
+
+    *value = get_value(*flag, flag_size, value_size);
 }
 
 int check_flag(char* flag, const char* short_hand, const char* full) {
@@ -76,7 +77,7 @@ void handle_flag(Flags* flags, char* raw_flag, size_t flag_size) {
 
     strcpy(flag, raw_flag);
 
-    get_flag(flag, &flag_size, &value, &value_size);
+    get_flag(&flag, &flag_size, &value, &value_size);
 
     if(value != NULL) {
         if (check_flag(flag, "n", "name")) {
